@@ -78,6 +78,7 @@ def get_gitlab_url():
     except NotFound:
         return DEFAULT_GITLAB_URL
 
+
 class GitlabException(Exception):
 
     """Gitlab error."""
@@ -113,8 +114,10 @@ class GitlabClient(object):
     def __init__(self, url=None):
         """Initialize the Gitlab client.
 
-        :param url: Base URL of the Gitlab server. If not provided, it will look in the git config
-            for the url setting in the [gitlab] section. If not found, it will use https://gitlab.com
+        :param url: Base URL of the Gitlab server.
+                    If not provided, it will look in the git config
+                    for the url setting in the [gitlab] section.
+                    If not found, it will use https://gitlab.com
 
         """
         if url is None:
@@ -181,9 +184,14 @@ class GitlabClient(object):
             pass
         else:
             raise GitlabException("Project {0} already exists.".format(name))
-        project = self._gitlab.Project({'name': name, 'wiki_enabled': wiki_enabled,
-                                       'public': public})
+
+        project = self._gitlab.Project({
+            'name': name,
+            'wiki_enabled': wiki_enabled,
+            'public': public
+        })
         project.save()
+
         return project
 
     def track(self, project_name='gitlab', branch='master',
@@ -216,7 +224,7 @@ class GitlabClient(object):
         return self.get_remote('gitlab')
 
     def get_remote(self, name):
-        """Return the remote with the given name of the repository in the current directory."""
+        """Return the remote with the given name from the current repository"""
         repo = Repo('.')
         if not hasattr(repo, 'remotes'):
             raise NotFound()
@@ -241,8 +249,9 @@ class GitlabClient(object):
     def get_project_page(self, name=None):
         """Return the url of the page of a Gitlab project.
 
-        :param name: Name of the project. If not provided, it will use the project name
-            tracking the repository in the current directory.
+        :param name: Name of the project.
+                     If not provided, it will use the project name
+                     tracking the repository in the current directory.
         :return: Gitlab project page url.
 
         """

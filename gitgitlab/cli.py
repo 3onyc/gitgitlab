@@ -12,7 +12,9 @@ from gitgitlab.client import GitlabClient, Unauthorized, AuthenticationError, No
 def get_gitlab():
     """Return a logged-in instance of the gitlab client.
 
-    Authenticate the client. If the authentication fails with an Unauthorized error,
+    Authenticate the client.
+
+    If the authentication fails with an Unauthorized error,
     ask the user to provide the token again and retry.
     """
     gitlab = GitlabClient()
@@ -75,7 +77,8 @@ def clone(project_name, path=None):
 
 
 @command()
-def track(project_name, branch='master',
+def track(project_name,
+          branch='master',
           remote=('r', 'gitlab', 'Name to give to the Gitlab remote'),
           no_push=('n', False, 'Do not push and do not set your Gitlab project as remote')):
     """Set a gitlab project as remote source."""
@@ -93,7 +96,11 @@ def create(project_name,
     """Create a Gitlab project and add it as remote."""
     gitlab = get_gitlab()
     project = gitlab.create_project(project_name, wiki_enabled=wiki, public=public)
-    print 'Project {0} created on Gitlab: {1}'.format(project.name, gitlab.get_project_page(project.name))
+    print 'Project {0} created on Gitlab: {1}'.format(
+        project.name,
+        gitlab.get_project_page(project.name)
+    )
+
     if track:
         r = gitlab.track(project_name, remote_name=remote, branch=branch)
         print 'New remote {0}: {1}'.format(remote, r.url)
