@@ -4,6 +4,8 @@ from ConfigParser import NoSectionError
 import os
 import re
 
+from xdg import BaseDirectory
+
 import gitlab
 from git import Repo, InvalidGitRepositoryError
 from git.config import GitConfigParser
@@ -18,11 +20,34 @@ DEFAULT_GITLAB_URL = 'https://gitlab.com'
 def get_global_config_parser(read_only=True):
     """Return the global config parser.
 
+    For a list of config files see
+    section FILES at https://git-scm.herokuapp.com/docs/git-config
+
     :param bool read_only: Return a read only config parser.
-    :return: A `~git.GitConfigParser` object for ~/.gitconfig.
+                           If read only, cascade through
+                           all global gitconfig locations.
+
+    :return: A `~git.GitConfigParser` object for ~/.gitconfig
+                                      or all global git config files
+                                      when read only
     """
-    path = os.path.normpath(os.path.expanduser("~/.gitconfig"))
-    return GitConfigParser(path, read_only=read_only)
+    if not read_only:
+        return GitConfigParser(
+            os.path.expanduser("~/.gitconfig"),
+            read_only=read_only
+        )
+
+    config_files = [
+        '/etc/gitconfig',
+        '{}/git/config'.format(BaseDirectory.xdg_config_home),
+        "~/.gitconfig"
+    ]
+    print config_files
+
+    return GitConfigParser(
+        [os.path.expanduser(p) for p in config_files],
+        read_only=read_only
+    )
 
 
 def get_custom_gitlab_url():
@@ -33,7 +58,7 @@ def get_custom_gitlab_url():
     try:
         repo = Repo('.')
     except InvalidGitRepositoryError:
-        config_reader = get_global_config_parser()
+        config_reader = get_global_config_parser(read_only=True)
     else:
         config_reader = repo.config_reader()
 
